@@ -10,9 +10,9 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.alpha</groupId>
-	<artifactId>alpha-backend</artifactId>
+	<artifactId>alpha_vault</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>alpha-backend</name>
+	<name>alpha_vault</name>
 	<description>Alpha Vault WebApis</description>
 
 	<properties>
