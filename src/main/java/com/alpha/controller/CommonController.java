@@ -3,6 +3,7 @@ package com.alpha.controller;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,8 @@ public class CommonController {
 
 	@Autowired
 	private CommonService commonService;
+	
+	private static final Logger LOG  = Logger.getLogger(CommonController.class);
 
 	@GetMapping("/crypto-coin-list")
 	public ResponseEntity<?> fetchCryptoCoinweb() throws Exception {
@@ -54,6 +57,8 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/crypto-coin-list");
 			userWebModel.setMessage(e.getMessage());
+			
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -79,6 +84,7 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/protfolio");
 			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -103,6 +109,7 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/protfolio");
 			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -127,6 +134,7 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/protfolio-list/{email}");
 			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -151,6 +159,7 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/protfolio-coin/{id}");
 			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -175,6 +184,7 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/protfolio-coin-list/{protfolioId}");
 			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -199,6 +209,7 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/protfolio-coin");
 			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
