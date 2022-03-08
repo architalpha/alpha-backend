@@ -14,7 +14,6 @@ import lombok.Setter;
 @Setter
 public @Data class CryptoCoinsModel implements Serializable{
 
-	
 	private String id;
 	
 	private String name;
