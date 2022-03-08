@@ -28,4 +28,8 @@ public interface CommonService {
 
 	List<Protfolio> getProtfolioListByEmailId(String email);
 
+	List<Protfolio>  getProtfolioListall();
+
+	List<CryptoCoins> findCryptoCoin(String search);
+
 }

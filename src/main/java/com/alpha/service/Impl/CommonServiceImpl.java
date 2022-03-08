@@ -105,4 +105,16 @@ public class CommonServiceImpl implements CommonService {
 		return protfolioReporsitory.findByUserEmail(email);
 	}
 
+	@Override
+	public List<Protfolio> getProtfolioListall() {
+		// TODO Auto-generated method stub
+		return protfolioReporsitory.findAll();
+	}
+
+	@Override
+	public List<CryptoCoins> findCryptoCoin(String search) {
+		// TODO Auto-generated method stub
+		return cryptoCoinReporsitory.findByIdContainingIgnoreCase(search);
+	}
+
 }

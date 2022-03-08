@@ -1,6 +1,7 @@
 package com.alpha.controller;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -56,6 +57,34 @@ public class CommonController {
 			userWebModel.setError(e.getMessage());
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/crypto-coin-list");
+			userWebModel.setMessage(e.getMessage());
+			
+			LOG.error(userWebModel.getPath(),e);
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@GetMapping("/find-crypto-coin-list/{search}")
+	public ResponseEntity<?> findCryptoCoin(@PathVariable String search) throws Exception {
+		try {
+
+			List<CryptoCoins> fetchCryptoCoin = commonService.findCryptoCoin(search);
+
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(HttpStatus.OK.name());
+			userWebModel.setStatus(HttpStatus.OK.toString());
+			userWebModel.setMessage("successfully !");
+			userWebModel.setData(fetchCryptoCoin);
+			userWebModel.setPath("/common/find-crypto-coin-list");
+
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.OK);
+		} catch (Exception e) {
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(e.getMessage());
+			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+			userWebModel.setPath("/common/find-crypto-coin-list/{search}");
 			userWebModel.setMessage(e.getMessage());
 			
 			LOG.error(userWebModel.getPath(),e);
@@ -124,6 +153,31 @@ public class CommonController {
 			userWebModel.setStatus(HttpStatus.OK.toString());
 			userWebModel.setMessage("successfully !");
 			userWebModel.setData(commonService.getProtfolioListByEmailId(email));
+			userWebModel.setPath("/common/protfolio-list/{email}");
+
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.OK);
+		} catch (Exception e) {
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(e.getMessage());
+			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+			userWebModel.setPath("/common/protfolio-list/{email}");
+			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@GetMapping("/protfolio-list-all")
+	public ResponseEntity<?> getProtfolioListall() throws Exception {
+		try {
+
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(HttpStatus.OK.name());
+			userWebModel.setStatus(HttpStatus.OK.toString());
+			userWebModel.setMessage("successfully !");
+			userWebModel.setData(commonService.getProtfolioListall());
 			userWebModel.setPath("/common/protfolio-list/{email}");
 
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.OK);
