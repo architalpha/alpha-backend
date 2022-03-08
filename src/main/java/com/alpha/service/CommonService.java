@@ -31,5 +31,6 @@ public interface CommonService {
 	List<Protfolio>  getProtfolioListall();
 
 	List<CryptoCoins> findCryptoCoin(String search);
+	
 
 }

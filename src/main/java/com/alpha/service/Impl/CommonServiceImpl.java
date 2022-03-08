@@ -115,6 +115,7 @@ public class CommonServiceImpl implements CommonService {
 	public List<CryptoCoins> findCryptoCoin(String search) {
 		// TODO Auto-generated method stub
 		return cryptoCoinReporsitory.findByIdContainingIgnoreCase(search);
+		
 	}
 
 }

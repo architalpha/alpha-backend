@@ -18,6 +18,7 @@ public interface CryptoCoinReporsitory extends JpaRepository<CryptoCoins, String
 
 	List<CryptoCoins> findByIdContainingIgnoreCase(String search);
 	
+	
 //	@Query("select cd from CreditDetails cd where cd.applicationId=:applicationId and cd.directorId is null and cd.isActive = true")
 //	List<CreditDetails> findByApplicationIdCoAppIdIsNullAndIsActive(@Param("applicationId") Long applicationId);
 

@@ -21,6 +21,7 @@ import lombok.Setter;
 //@Indexed
 public @Data class CryptoCoins implements Serializable{
 
+	
 	@Id
 	@Column(name="coin_id")
 	private String id;

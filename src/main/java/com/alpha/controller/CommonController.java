@@ -31,6 +31,7 @@ public class CommonController {
 //	@Autowired
 //	private HttpServletRequest request;
 
+	
 	@Autowired
 	private CommonService commonService;
 	
