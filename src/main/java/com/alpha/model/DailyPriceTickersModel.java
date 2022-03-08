@@ -14,6 +14,7 @@ import lombok.Setter;
 @Setter
 public @Data class DailyPriceTickersModel implements Serializable{
 
+	
 	private String coin_id;
 	
 	private String name;
