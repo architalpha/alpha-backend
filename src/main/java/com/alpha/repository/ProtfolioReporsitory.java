@@ -13,4 +13,6 @@ public interface ProtfolioReporsitory extends JpaRepository<Protfolio, Long> {
 
 	List<Protfolio> findByUserEmail(String email);
 
+	List<Protfolio> findByIsAdmin(Boolean isAdmin);
+
 }

@@ -8,20 +8,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name="protfolio")
+@Table(name="user_protfolio")
 @Getter
 @Setter
 @Data
-public class Protfolio {
+public class UserProtfolio {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -29,30 +26,15 @@ public class Protfolio {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	private String name;	
-	
-	private Boolean isAdmin = false;
-	
-	private Date createdon;
-	
+	@Column(name="protfolio_id")
+	private Long protfolioId;	
+		
 	@Column(name="createdby")
 	private String userEmail;	
 	
-	@Column(name="strategy_type")
-	private String strategyType;
-	
-	private String description;
-	
-	@Column(name="short_desc")
-	private String shortDesc;
-	
-	private String rebalancing;
-	
-	@Column(name="hold_term")
-	private String holdTerm;
-	
-	@Column(name="buy_type")
-	private String buyType;	
-	
+	@Column(name="investment_amount")
+	private Double investmentAmount;	
+
+	private Date createdon;
 	
 }

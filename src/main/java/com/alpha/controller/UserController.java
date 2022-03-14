@@ -30,6 +30,11 @@ public class UserController {
 
 	@PostMapping("/signup")
 	public ResponseEntity<User> create(@RequestBody User user) throws Exception {
+		
+		User findByEmail = userService.findByEmail(user.getEmail());
+		if(null != findByEmail) {
+			user = findByEmail;
+		}
 		user = userService.save(user);
 		user.setPassword(";(");
 		return new ResponseEntity<User>(user, HttpStatus.OK);

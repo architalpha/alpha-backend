@@ -3,9 +3,13 @@ package com.alpha.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -86,9 +90,9 @@ public @Data class CryptoCoins implements Serializable{
 	    )
     private List<CoinTags> coinTags;*/
 	
-//	@OneToOne(cascade=CascadeType.ALL,fetch= FetchType.LAZY)
-//    @JoinColumn(name="coin_id")
-//    private DailyPriceTickers tickers;
+	@OneToOne(cascade=CascadeType.ALL,fetch= FetchType.EAGER)
+    @JoinColumn(name="coin_id")
+    private DailyPriceTickers tickers;
 
 	
 	/*@OneToMany(fetch = FetchType.LAZY)
