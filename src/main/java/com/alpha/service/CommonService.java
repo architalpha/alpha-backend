@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import com.alpha.entity.CryptoCoins;
 import com.alpha.entity.Protfolio;
 import com.alpha.entity.ProtfolioCoin;
+import com.alpha.entity.UserProtfolio;
+import com.alpha.model.ProtfolioWeb;
 
 /**
  * @author sandip.bhetariya
@@ -26,6 +28,26 @@ public interface CommonService {
 
 	List<ProtfolioCoin> getProtfolioCoinByProtfolioId(Long protfolioId) throws Exception;
 
-	List<Protfolio> getProtfolioListByEmailId(String email);
+	List<Protfolio> getProtfolioListByEmailId(String email) throws Exception;
+	
+	List<Protfolio>  getProtfolioListall() throws Exception;
+
+	List<CryptoCoins> findCryptoCoin(String search) throws Exception;
+
+	CryptoCoins cryptoCoinById(String id) throws Exception;
+
+	List<ProtfolioWeb> getProtfolioFullDetailsListall() throws Exception;
+
+	ProtfolioWeb getProtfolioFullDetailsById(Long id) throws Exception;
+
+	UserProtfolio getUserProtfolioById(Long id) throws Exception;
+
+	List<UserProtfolio> getUserProtfolioByEmail(String email) throws Exception;
+
+	UserProtfolio saveUpdateUserProtfolio(UserProtfolio userProtfolio) throws Exception;
+
+	Object getProtfolioFullDetailsListallAdmin() throws Exception;
+
+	Object getProtfolioListallbyEmail(String email) throws Exception;
 
 }
