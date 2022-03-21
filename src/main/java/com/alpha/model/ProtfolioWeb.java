@@ -28,6 +28,8 @@ public class ProtfolioWeb {
 	private Double totalCreatedPrice;
 	private Double totalCurrentPrice;
 	
+	private Double differentPercentage;
+	
 	private List<ProtfolioCoinWeb> protfolioCoin;
 	
 }

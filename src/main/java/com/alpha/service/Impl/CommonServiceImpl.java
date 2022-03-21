@@ -185,6 +185,8 @@ public class CommonServiceImpl implements CommonService {
 				web.setProtfolioCoin(prrotfoliCoinLst);
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
+				
+				web.setDifferentPercentage(-61.00d);
 
 				resList.add(web);
 
@@ -228,6 +230,8 @@ public class CommonServiceImpl implements CommonService {
 			res.setProtfolioCoin(prrotfoliCoinLst);
 			res.setTotalCreatedPrice(totalCreatedPrice);
 			res.setTotalCurrentPrice(totalCurrentPrice);
+			
+			res.setDifferentPercentage(-61.00d);
 		}
 		return res;
 	}
@@ -357,6 +361,8 @@ public class CommonServiceImpl implements CommonService {
 				web.setProtfolioCoin(prrotfoliCoinLst);
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
+				
+				web.setDifferentPercentage(-61.00d);
 
 				resList.add(web);
 
