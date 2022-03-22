@@ -395,7 +395,7 @@ public class CommonServiceImpl implements CommonService {
 		List<Long> protfolioIdLst = new ArrayList<>();
 
 		if (null != protfolioCoinListWeb.getIsNew() && null != protfolioCoinListWeb.getProtfolioId()
-				&& protfolioCoinListWeb.getIsNew() == true) {
+				&& protfolioCoinListWeb.getIsNew() == false) {
 			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(protfolioCoinListWeb.getProtfolioId());
 
 			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
