@@ -22,6 +22,7 @@ import com.alpha.entity.Protfolio;
 import com.alpha.entity.ProtfolioCoin;
 import com.alpha.entity.UserProtfolio;
 import com.alpha.model.LoginWebModel;
+import com.alpha.model.ProtfolioCoinListWeb;
 import com.alpha.service.CommonService;
 
 @CrossOrigin("*")
@@ -392,6 +393,32 @@ public class CommonController {
 			userWebModel.setError(e.getMessage());
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/common/protfolio-coin");
+			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(),e);
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	
+	@PostMapping("/protfolio-coin-list")
+	public ResponseEntity<?> saveUpdateProtfolioCoinList(@RequestBody ProtfolioCoinListWeb protfolioCoinListWeb) throws Exception {
+		try {
+//			List<ProtfolioCoin> saveUpdateProtfolioCoinList = commonService.saveUpdateProtfolioCoinList(protfolioCoinListWeb);
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(HttpStatus.OK.name());
+			userWebModel.setStatus(HttpStatus.OK.toString());
+			userWebModel.setMessage("successfully !");
+			userWebModel.setData(commonService.saveUpdateProtfolioCoinList(protfolioCoinListWeb));
+			userWebModel.setPath("/common/protfolio-coin-list");
+
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.OK);
+		} catch (Exception e) {
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(e.getMessage());
+			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+			userWebModel.setPath("/common/protfolio-coin-list");
 			userWebModel.setMessage(e.getMessage());
 			LOG.error(userWebModel.getPath(),e);
 			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);

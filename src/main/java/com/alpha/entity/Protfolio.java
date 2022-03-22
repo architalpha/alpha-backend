@@ -31,7 +31,7 @@ public class Protfolio {
 	
 	private String name;	
 	
-	private Boolean isAdmin = false;
+	private Boolean isAdmin;
 	
 	private Date createdon;
 	

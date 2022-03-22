@@ -8,6 +8,7 @@ import com.alpha.entity.CryptoCoins;
 import com.alpha.entity.Protfolio;
 import com.alpha.entity.ProtfolioCoin;
 import com.alpha.entity.UserProtfolio;
+import com.alpha.model.ProtfolioCoinListWeb;
 import com.alpha.model.ProtfolioWeb;
 
 /**
@@ -49,5 +50,7 @@ public interface CommonService {
 	Object getProtfolioFullDetailsListallAdmin() throws Exception;
 
 	Object getProtfolioListallbyEmail(String email) throws Exception;
+
+	List<ProtfolioCoin> saveUpdateProtfolioCoinList(ProtfolioCoinListWeb protfolioCoinListWeb);
 
 }

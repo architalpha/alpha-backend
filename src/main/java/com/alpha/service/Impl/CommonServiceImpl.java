@@ -17,11 +17,14 @@ import org.springframework.stereotype.Service;
 import com.alpha.entity.CryptoCoins;
 import com.alpha.entity.Protfolio;
 import com.alpha.entity.ProtfolioCoin;
+import com.alpha.entity.ProtfolioCoinAudit;
 import com.alpha.entity.UserCrypto;
 import com.alpha.entity.UserProtfolio;
+import com.alpha.model.ProtfolioCoinListWeb;
 import com.alpha.model.ProtfolioCoinWeb;
 import com.alpha.model.ProtfolioWeb;
 import com.alpha.repository.CryptoCoinReporsitory;
+import com.alpha.repository.ProtfolioCoinAuditReporsitory;
 import com.alpha.repository.ProtfolioCoinReporsitory;
 import com.alpha.repository.ProtfolioReporsitory;
 import com.alpha.repository.UserCryptoRepository;
@@ -47,9 +50,12 @@ public class CommonServiceImpl implements CommonService {
 
 	@Autowired
 	private UserProtfolioReporsitory userProtfolioReporsitory;
-	
+
 	@Autowired
 	private UserCryptoRepository userCryptoRepository;
+
+	@Autowired
+	private ProtfolioCoinAuditReporsitory protfolioCoinAuditReporsitory;
 
 	@Override
 	public Page<CryptoCoins> fetchCryptoCoin() throws Exception {
@@ -92,7 +98,8 @@ public class CommonServiceImpl implements CommonService {
 				// (protfolioCoin.getCurrentPrice()/100)*protfolioCoin.getPercentage();
 				// Double currentPrice = protfolioCoin.getCurrentPrice();
 				Double avg = (protfolioCoin.getCreatedPrice() * protfolioCoin.getPercentage()) / 100;
-//				Double avg = protfolioCoin.getCurrentPrice() * (protfolioCoin.getPercentage() / 100);
+				// Double avg = protfolioCoin.getCurrentPrice() * (protfolioCoin.getPercentage()
+				// / 100);
 				protfolioCoin.setCurrentPrice(avg);
 				return protfolioCoinReporsitory.save(protfolioCoin);
 			} else {
@@ -173,10 +180,12 @@ public class CommonServiceImpl implements CommonService {
 					BeanUtils.copyProperties(protfolioCoin, coinWeb);
 					totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCreatedPrice());
 
-					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),protfolio.getId());
+					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
+							protfolio.getId());
 					CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 					if (null != crypto && crypto.getTickers() != null && userCrypto != null) {
-						totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price()*userCrypto.getCoinvalue());
+						totalCurrentPrice = Double.sum(totalCurrentPrice,
+								crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
 					}
 					coinWeb.setCoin(crypto);
 					prrotfoliCoinLst.add(coinWeb);
@@ -185,7 +194,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setProtfolioCoin(prrotfoliCoinLst);
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
-				
+
 				web.setDifferentPercentage(-61.00d);
 
 				resList.add(web);
@@ -230,7 +239,7 @@ public class CommonServiceImpl implements CommonService {
 			res.setProtfolioCoin(prrotfoliCoinLst);
 			res.setTotalCreatedPrice(totalCreatedPrice);
 			res.setTotalCurrentPrice(totalCurrentPrice);
-			
+
 			res.setDifferentPercentage(-61.00d);
 		}
 		return res;
@@ -252,32 +261,34 @@ public class CommonServiceImpl implements CommonService {
 	public UserProtfolio saveUpdateUserProtfolio(UserProtfolio userProtfolio) throws Exception {
 		// TODO Auto-generated method stub
 		userProtfolio = userProtfolioReporsitory.save(userProtfolio);
-		List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(userProtfolio.getProtfolioId());
+		List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory
+				.findByProtfolioId(userProtfolio.getProtfolioId());
 		for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
-			//userCryptoRepository
+			// userCryptoRepository
 			UserCrypto userCrypto = new UserCrypto();
-//			Double avg = (protfolioCoin.getCreatedPrice() * protfolioCoin.getPercentage()) / 100;
-			Double avg =  (userProtfolio.getInvestmentAmount() * protfolioCoin.getPercentage())/100;
+			// Double avg = (protfolioCoin.getCreatedPrice() *
+			// protfolioCoin.getPercentage()) / 100;
+			Double avg = (userProtfolio.getInvestmentAmount() * protfolioCoin.getPercentage()) / 100;
 			userCrypto.setProtfolioId(userProtfolio.getProtfolioId());
 			protfolioCoin.setCreatedPrice(avg);
 			userCrypto.setCoinId(protfolioCoin.getCoinId());
-			
+
 			Optional<CryptoCoins> findById = cryptoCoinReporsitory.findById(protfolioCoin.getCoinId());
-			if(findById.isPresent()) {
-				if(null != findById.get().getTickers()) {
-					userCrypto.setCoinvalue(avg/findById.get().getTickers().getUsd_price());
-				}else {
+			if (findById.isPresent()) {
+				if (null != findById.get().getTickers()) {
+					userCrypto.setCoinvalue(avg / findById.get().getTickers().getUsd_price());
+				} else {
 					userCrypto.setCoinvalue(avg);
 				}
-			}else {
+			} else {
 				userCrypto.setCoinvalue(avg);
 			}
-//			userCrypto.setCoinvalue(avg);
+			// userCrypto.setCoinvalue(avg);
 			userCrypto.setUserEmail(userProtfolio.getUserEmail());
 			userCrypto.setCreatedon(new Date());
 			userCryptoRepository.save(userCrypto);
 			protfolioCoinReporsitory.save(protfolioCoin);
-			
+
 		}
 		return userProtfolio;
 	}
@@ -330,7 +341,7 @@ public class CommonServiceImpl implements CommonService {
 			isProcess = Boolean.TRUE;
 			userProtfoliList.add(userProtfolio.getProtfolioId());
 		}
-		if(!isProcess) {
+		if (!isProcess) {
 			return resList;
 		}
 		try {
@@ -349,10 +360,12 @@ public class CommonServiceImpl implements CommonService {
 					BeanUtils.copyProperties(protfolioCoin, coinWeb);
 					totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCreatedPrice());
 
-					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),protfolio.getId());
+					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
+							protfolio.getId());
 					CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 					if (null != crypto && crypto.getTickers() != null && userCrypto != null) {
-						totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price()*userCrypto.getCoinvalue());
+						totalCurrentPrice = Double.sum(totalCurrentPrice,
+								crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
 					}
 					coinWeb.setCoin(crypto);
 					prrotfoliCoinLst.add(coinWeb);
@@ -361,7 +374,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setProtfolioCoin(prrotfoliCoinLst);
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
-				
+
 				web.setDifferentPercentage(-61.00d);
 
 				resList.add(web);
@@ -373,6 +386,61 @@ public class CommonServiceImpl implements CommonService {
 			e.printStackTrace();
 		}
 		return resList;
+	}
+
+	@Override
+	public List<ProtfolioCoin> saveUpdateProtfolioCoinList(ProtfolioCoinListWeb protfolioCoinListWeb) {
+		// TODO Auto-generated method stub
+		List<ProtfolioCoin> resLst = new ArrayList<>();
+		List<Long> protfolioIdLst = new ArrayList<>();
+
+		if (null != protfolioCoinListWeb.getIsNew() && null != protfolioCoinListWeb.getProtfolioId()
+				&& protfolioCoinListWeb.getIsNew() == true) {
+			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(protfolioCoinListWeb.getProtfolioId());
+
+			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
+				protfolioIdLst.add(protfolioCoin.getId());
+				ProtfolioCoinAudit audit = new ProtfolioCoinAudit();
+				BeanUtils.copyProperties(protfolioCoin, audit);
+				audit.setProtfolioCoinId(protfolioCoin.getId());
+				audit.setCreatedon(new Date());
+				protfolioCoinAuditReporsitory.save(audit);
+				protfolioCoinReporsitory.delete(protfolioCoin);
+			}
+		}
+
+		List<ProtfolioCoin> protfolioCoinList = protfolioCoinListWeb.getProtfolioCoinList();
+		try {
+			for (ProtfolioCoin protfolioCoin : protfolioCoinList) {
+
+				if (protfolioCoin != null && protfolioCoin.getId() != null) {
+					Optional<ProtfolioCoin> findById = protfolioCoinReporsitory.findById(protfolioCoin.getId());
+					if (findById.isPresent()) {
+						protfolioCoin.setCreatedon(findById.get().getCreatedon());
+						Double avg = (protfolioCoin.getCreatedPrice() * protfolioCoin.getPercentage()) / 100;
+						protfolioCoin.setCurrentPrice(avg);
+						resLst.add(protfolioCoinReporsitory.save(protfolioCoin));
+					} else {
+						protfolioCoin.setCreatedon(new Date());
+						Double avg = (protfolioCoin.getCreatedPrice() * protfolioCoin.getPercentage()) / 100;
+						protfolioCoin.setCurrentPrice(avg);
+						resLst.add(protfolioCoinReporsitory.save(protfolioCoin));
+					}
+				} else {
+					protfolioCoin.setCreatedon(new Date());
+					Double avg = (protfolioCoin.getCreatedPrice() * protfolioCoin.getPercentage()) / 100;
+					protfolioCoin.setCurrentPrice(avg);
+					resLst.add(protfolioCoinReporsitory.save(protfolioCoin));
+				}
+
+			}
+
+//			protfolioCoinReporsitory.deleteAll(protfolioCoinList);
+		} catch (Exception e) {
+
+		}
+
+		return resLst;
 	}
 
 }

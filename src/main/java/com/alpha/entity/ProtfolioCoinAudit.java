@@ -14,17 +14,20 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "protfolio_coin")
+@Table(name = "protfolio_coin_audit")
 @Getter
 @Setter
 @Data
-public class ProtfolioCoin {
+public class ProtfolioCoinAudit {
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column(name = "protfolio_coin_id")
+	private Long protfolioCoinId;
 
 	@Column(name = "protfolio_id")
 	private Long protfolioId;
