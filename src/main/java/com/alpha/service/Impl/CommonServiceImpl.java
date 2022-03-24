@@ -72,6 +72,11 @@ public class CommonServiceImpl implements CommonService {
 			Optional<Protfolio> findById = protfolioReporsitory.findById(protfolio.getId());
 			if (findById.isPresent()) {
 				protfolio.setCreatedon(findById.get().getCreatedon());
+				if (null != protfolio.getUserEmail()
+						&& (protfolio.getUserEmail().equalsIgnoreCase("architarya@gmail.com")
+								|| protfolio.getUserEmail().equalsIgnoreCase("vibhor@alphavault.io")))
+					protfolio.setIsAdmin(Boolean.TRUE);
+				
 				return protfolioReporsitory.save(protfolio);
 			} else {
 				protfolio.setCreatedon(new Date());
@@ -84,6 +89,11 @@ public class CommonServiceImpl implements CommonService {
 			}
 		} else {
 			protfolio.setCreatedon(new Date());
+			if (null != protfolio.getUserEmail()
+					&& (protfolio.getUserEmail().equalsIgnoreCase("architarya@gmail.com")
+							|| protfolio.getUserEmail().equalsIgnoreCase("vibhor@alphavault.io")))
+				protfolio.setIsAdmin(Boolean.TRUE);
+			
 			return protfolioReporsitory.save(protfolio);
 		}
 	}
