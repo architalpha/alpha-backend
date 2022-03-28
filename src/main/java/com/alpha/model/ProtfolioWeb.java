@@ -30,6 +30,8 @@ public class ProtfolioWeb {
 	
 	private Double differentPercentage;
 	
+	private String color;
+	
 	private List<ProtfolioCoinWeb> protfolioCoin;
 	
 }

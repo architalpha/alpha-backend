@@ -54,5 +54,7 @@ public class Protfolio {
 	@Column(name="buy_type")
 	private String buyType;	
 	
+	private String color;
+	
 	
 }
