@@ -205,7 +205,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
 
-				web.setDifferentPercentage(-61.00d);
+				web.setDifferentPercentage((totalCurrentPrice-totalCreatedPrice)/100);
 
 				resList.add(web);
 
@@ -240,7 +240,9 @@ public class CommonServiceImpl implements CommonService {
 
 				CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 				if (null != crypto && crypto.getTickers() != null) {
-					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price());
+					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
+							protfolio.getId());
+					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price()*userCrypto.getCoinvalue());
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -250,7 +252,8 @@ public class CommonServiceImpl implements CommonService {
 			res.setTotalCreatedPrice(totalCreatedPrice);
 			res.setTotalCurrentPrice(totalCurrentPrice);
 
-			res.setDifferentPercentage(-61.00d);
+			
+			res.setDifferentPercentage((totalCurrentPrice-totalCreatedPrice)/100);
 		}
 		return res;
 	}
@@ -385,7 +388,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
 
-				web.setDifferentPercentage(-61.00d);
+				web.setDifferentPercentage((totalCurrentPrice-totalCreatedPrice)/100);
 
 				resList.add(web);
 

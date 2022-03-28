@@ -42,4 +42,6 @@ public class ProtfolioCoin {
 
 	private Date createdon;
 
+	private String color;
+	
 }
