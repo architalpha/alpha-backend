@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import com.alpha.entity.CoinsHistory;
 import com.alpha.entity.CryptoCoins;
+import com.alpha.entity.DailyPriceTickers;
 import com.alpha.entity.Protfolio;
 import com.alpha.entity.ProtfolioCoin;
 import com.alpha.entity.ProtfolioCoinAudit;
@@ -30,6 +31,7 @@ import com.alpha.model.ProtfolioCoinWeb;
 import com.alpha.model.ProtfolioWeb;
 import com.alpha.repository.CoinsHistoryRepository;
 import com.alpha.repository.CryptoCoinReporsitory;
+import com.alpha.repository.DailyPriceTickersRepository;
 import com.alpha.repository.ProtfolioCoinAuditReporsitory;
 import com.alpha.repository.ProtfolioCoinReporsitory;
 import com.alpha.repository.ProtfolioReporsitory;
@@ -65,6 +67,9 @@ public class CommonServiceImpl implements CommonService {
 	
 	@Autowired
 	private CoinsHistoryRepository coinsHistoryRepository;
+	
+	@Autowired
+	private DailyPriceTickersRepository dailyPriceTickersRepository;
 
 	@Override
 	public Page<CryptoCoins> fetchCryptoCoin() throws Exception {
@@ -244,14 +249,13 @@ public class CommonServiceImpl implements CommonService {
 				ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
 
 				BeanUtils.copyProperties(protfolioCoin, coinWeb);
-				totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCreatedPrice());
+				
 
 				CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 				if (null != crypto && crypto.getTickers() != null) {
-					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
-							protfolio.getId());
-					totalCurrentPrice = Double.sum(totalCurrentPrice,
-							crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
+					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),protfolio.getId());
+					totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCurrentPrice() * userCrypto.getCoinvalue());
+					totalCurrentPrice = Double.sum(totalCurrentPrice,crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -298,6 +302,7 @@ public class CommonServiceImpl implements CommonService {
 			if (findById.isPresent()) {
 				if (null != findById.get().getTickers()) {
 					userCrypto.setCoinvalue(avg / findById.get().getTickers().getUsd_price());
+					userCrypto.setCreatedPrice(findById.get().getTickers().getUsd_price());
 				} else {
 					userCrypto.setCoinvalue(avg);
 				}
@@ -334,6 +339,7 @@ public class CommonServiceImpl implements CommonService {
 			List<String> coinIdsList = findByProtfolioId.stream().map(ProtfolioCoin::getCoinId).collect(Collectors.toList());
 			Date from = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 			List<CoinsHistory> coinlist = coinsHistoryRepository.getCoinHistoryByIdAndPastDate(coinIdsList,from);
+//			List<DailyPriceTickers> tikcerList = dailyPriceTickersRepository.findAllById(coinIdsList);
 			
 			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
 				ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
@@ -343,12 +349,13 @@ public class CommonServiceImpl implements CommonService {
 				Double coinValue = 0.0;
 				
 				CoinsHistory coinsHistory = coinlist.stream().filter(coin ->coin.getCoin_id().equalsIgnoreCase(coinWeb.getCoinId())).findFirst().orElse(null);
-				totalCreatedPrice = Double.sum(totalCreatedPrice, coinsHistory.getClose());
+				if(null != coinsHistory)
+					totalCreatedPrice = Double.sum(totalCreatedPrice, coinsHistory.getClose());
 
 				CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 				if (null != crypto && crypto.getTickers() != null) {
-					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price());
 					coinValue = avg / crypto.getTickers().getUsd_price();
+					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price()*coinValue);
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -357,7 +364,8 @@ public class CommonServiceImpl implements CommonService {
 			web.setProtfolioCoin(prrotfoliCoinLst);
 			web.setTotalCreatedPrice(totalCreatedPrice);
 			web.setTotalCurrentPrice(totalCurrentPrice);
-
+			web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
+			
 			resList.add(web);
 
 		}
@@ -393,14 +401,13 @@ public class CommonServiceImpl implements CommonService {
 				for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
 					ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
 					BeanUtils.copyProperties(protfolioCoin, coinWeb);
-					totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCreatedPrice());
 
 					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
 							protfolio.getId());
 					CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 					if (null != crypto && crypto.getTickers() != null && userCrypto != null) {
-						totalCurrentPrice = Double.sum(totalCurrentPrice,
-								crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
+						totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCurrentPrice()*userCrypto.getCoinvalue());
+						totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
 					}
 					coinWeb.setCoin(crypto);
 					prrotfoliCoinLst.add(coinWeb);

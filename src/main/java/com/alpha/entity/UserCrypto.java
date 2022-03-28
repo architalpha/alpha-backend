@@ -30,6 +30,9 @@ public class UserCrypto {
 	@Column(name = "coin_value")
 	private Double coinvalue;
 	
+	@Column(name = "created_price")
+	private Double createdPrice;
+	
 //	invest - 1000 
 //	
 //	ratio - 40/30/30
