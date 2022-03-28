@@ -1,9 +1,13 @@
 package com.alpha.service.Impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -14,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.alpha.entity.CoinsHistory;
 import com.alpha.entity.CryptoCoins;
 import com.alpha.entity.Protfolio;
 import com.alpha.entity.ProtfolioCoin;
@@ -23,6 +28,7 @@ import com.alpha.entity.UserProtfolio;
 import com.alpha.model.ProtfolioCoinListWeb;
 import com.alpha.model.ProtfolioCoinWeb;
 import com.alpha.model.ProtfolioWeb;
+import com.alpha.repository.CoinsHistoryRepository;
 import com.alpha.repository.CryptoCoinReporsitory;
 import com.alpha.repository.ProtfolioCoinAuditReporsitory;
 import com.alpha.repository.ProtfolioCoinReporsitory;
@@ -56,6 +62,9 @@ public class CommonServiceImpl implements CommonService {
 
 	@Autowired
 	private ProtfolioCoinAuditReporsitory protfolioCoinAuditReporsitory;
+	
+	@Autowired
+	private CoinsHistoryRepository coinsHistoryRepository;
 
 	@Override
 	public Page<CryptoCoins> fetchCryptoCoin() throws Exception {
@@ -76,7 +85,7 @@ public class CommonServiceImpl implements CommonService {
 						&& (protfolio.getUserEmail().equalsIgnoreCase("architarya@gmail.com")
 								|| protfolio.getUserEmail().equalsIgnoreCase("vibhor@alphavault.io")))
 					protfolio.setIsAdmin(Boolean.TRUE);
-				
+
 				return protfolioReporsitory.save(protfolio);
 			} else {
 				protfolio.setCreatedon(new Date());
@@ -89,11 +98,10 @@ public class CommonServiceImpl implements CommonService {
 			}
 		} else {
 			protfolio.setCreatedon(new Date());
-			if (null != protfolio.getUserEmail()
-					&& (protfolio.getUserEmail().equalsIgnoreCase("architarya@gmail.com")
-							|| protfolio.getUserEmail().equalsIgnoreCase("vibhor@alphavault.io")))
+			if (null != protfolio.getUserEmail() && (protfolio.getUserEmail().equalsIgnoreCase("architarya@gmail.com")
+					|| protfolio.getUserEmail().equalsIgnoreCase("vibhor@alphavault.io")))
 				protfolio.setIsAdmin(Boolean.TRUE);
-			
+
 			return protfolioReporsitory.save(protfolio);
 		}
 	}
@@ -205,7 +213,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
 
-				web.setDifferentPercentage((totalCurrentPrice-totalCreatedPrice)/100);
+				web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
 
 				resList.add(web);
 
@@ -242,7 +250,8 @@ public class CommonServiceImpl implements CommonService {
 				if (null != crypto && crypto.getTickers() != null) {
 					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
 							protfolio.getId());
-					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price()*userCrypto.getCoinvalue());
+					totalCurrentPrice = Double.sum(totalCurrentPrice,
+							crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -252,8 +261,7 @@ public class CommonServiceImpl implements CommonService {
 			res.setTotalCreatedPrice(totalCreatedPrice);
 			res.setTotalCurrentPrice(totalCurrentPrice);
 
-			
-			res.setDifferentPercentage((totalCurrentPrice-totalCreatedPrice)/100);
+			res.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
 		}
 		return res;
 	}
@@ -319,14 +327,28 @@ public class CommonServiceImpl implements CommonService {
 			BeanUtils.copyProperties(protfolio, web);
 			List<ProtfolioCoinWeb> prrotfoliCoinLst = new ArrayList<>();
 			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(web.getId());
+			LocalDate localDate = LocalDate.now().minusDays(7);
+//			Date in = new Date();
+//			LocalDateTime ldt = LocalDateTime.ofInstant(in.toInstant(), ZoneId.systemDefault());
+//			Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+			List<String> coinIdsList = findByProtfolioId.stream().map(ProtfolioCoin::getCoinId).collect(Collectors.toList());
+			Date from = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			List<CoinsHistory> coinlist = coinsHistoryRepository.getCoinHistoryByIdAndPastDate(coinIdsList,from);
+			
 			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
 				ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
 				BeanUtils.copyProperties(protfolioCoin, coinWeb);
-				totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCreatedPrice());
+
+				Double avg = (1000 * protfolioCoin.getPercentage()) / 100;
+				Double coinValue = 0.0;
+				
+				CoinsHistory coinsHistory = coinlist.stream().filter(coin ->coin.getCoin_id().equalsIgnoreCase(coinWeb.getCoinId())).findFirst().orElse(null);
+				totalCreatedPrice = Double.sum(totalCreatedPrice, coinsHistory.getClose());
 
 				CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 				if (null != crypto && crypto.getTickers() != null) {
 					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price());
+					coinValue = avg / crypto.getTickers().getUsd_price();
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -388,7 +410,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
 
-				web.setDifferentPercentage((totalCurrentPrice-totalCreatedPrice)/100);
+				web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
 
 				resList.add(web);
 
@@ -409,7 +431,8 @@ public class CommonServiceImpl implements CommonService {
 
 		if (null != protfolioCoinListWeb.getIsNew() && null != protfolioCoinListWeb.getProtfolioId()
 				&& protfolioCoinListWeb.getIsNew() == false) {
-			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(protfolioCoinListWeb.getProtfolioId());
+			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory
+					.findByProtfolioId(protfolioCoinListWeb.getProtfolioId());
 
 			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
 				protfolioIdLst.add(protfolioCoin.getId());
@@ -448,7 +471,7 @@ public class CommonServiceImpl implements CommonService {
 
 			}
 
-//			protfolioCoinReporsitory.deleteAll(protfolioCoinList);
+			// protfolioCoinReporsitory.deleteAll(protfolioCoinList);
 		} catch (Exception e) {
 
 		}
