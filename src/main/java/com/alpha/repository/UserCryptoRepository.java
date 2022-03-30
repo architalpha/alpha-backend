@@ -12,6 +12,8 @@ public interface UserCryptoRepository extends JpaRepository<UserCrypto, Long> {
 
 	UserCrypto findByCoinIdAndProtfolioId(String coinId, Long id);
 
+	UserCrypto findFirstByCoinIdAndProtfolioIdAndUserEmail(String coinId, Long id, String email);
+
 //	UserCrypto findbyCoinIdAndProtfolioId(String coinId, Long id);
 //
 //	UserCrypto findbyCoinIdAndProtfolioIdFindFirst(String coinId, Long id);

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.alpha.controller.CommonController;
 import com.alpha.entity.CoinsHistory;
 import com.alpha.entity.CryptoCoins;
 import com.alpha.entity.DailyPriceTickers;
@@ -64,12 +66,14 @@ public class CommonServiceImpl implements CommonService {
 
 	@Autowired
 	private ProtfolioCoinAuditReporsitory protfolioCoinAuditReporsitory;
-	
+
 	@Autowired
 	private CoinsHistoryRepository coinsHistoryRepository;
-	
+
 	@Autowired
 	private DailyPriceTickersRepository dailyPriceTickersRepository;
+	
+	private static final Logger log  = Logger.getLogger(CommonServiceImpl.class);
 
 	@Override
 	public Page<CryptoCoins> fetchCryptoCoin() throws Exception {
@@ -218,7 +222,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
 
-				web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
+				web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 10);
 
 				resList.add(web);
 
@@ -238,24 +242,37 @@ public class CommonServiceImpl implements CommonService {
 		Optional<Protfolio> findById = protfolioReporsitory.findById(id);
 		if (findById.isPresent()) {
 			Protfolio protfolio = findById.get();
-			Double totalCreatedPrice = 0.0;
+			Double totalCreatedPrice = 1000.0;
 			Double totalCurrentPrice = 0.0;
 
 			BeanUtils.copyProperties(protfolio, res);
 
 			List<ProtfolioCoinWeb> prrotfoliCoinLst = new ArrayList<>();
 			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(res.getId());
+			
+			LocalDate localDate = LocalDate.now().minusDays(7);
+			List<String> coinIdsList = findByProtfolioId.stream().map(ProtfolioCoin::getCoinId).collect(Collectors.toList());
+			Date from = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			List<CoinsHistory> coinlist = coinsHistoryRepository.getCoinHistoryByIdAndPastDate(coinIdsList, from);
+			
 			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
 				ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
 
 				BeanUtils.copyProperties(protfolioCoin, coinWeb);
 				
+				Double avg = (1000 * protfolioCoin.getPercentage()) / 100;
+				Double coinValue = 0.0;
+				
+				CoinsHistory coinsHistory = coinlist.stream()
+						.filter(coin -> coin.getCoin_id().equalsIgnoreCase(coinWeb.getCoinId())).findFirst()
+						.orElse(null);
+				if (null != coinsHistory) {
+					coinValue = avg / coinsHistory.getClose();
+				}
 
 				CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 				if (null != crypto && crypto.getTickers() != null) {
-					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),protfolio.getId());
-					totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCurrentPrice() * userCrypto.getCoinvalue());
-					totalCurrentPrice = Double.sum(totalCurrentPrice,crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
+					totalCurrentPrice = Double.sum(totalCurrentPrice,crypto.getTickers().getUsd_price() * coinValue);
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -265,7 +282,7 @@ public class CommonServiceImpl implements CommonService {
 			res.setTotalCreatedPrice(totalCreatedPrice);
 			res.setTotalCurrentPrice(totalCurrentPrice);
 
-			res.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
+			res.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 10);
 		}
 		return res;
 	}
@@ -326,36 +343,37 @@ public class CommonServiceImpl implements CommonService {
 		List<Protfolio> findAll = protfolioReporsitory.findByIsAdmin(Boolean.TRUE);
 		for (Protfolio protfolio : findAll) {
 			ProtfolioWeb web = new ProtfolioWeb();
-			Double totalCreatedPrice = 0.0;
+			Double totalCreatedPrice = 1000.0;
 			Double totalCurrentPrice = 0.0;
 
 			BeanUtils.copyProperties(protfolio, web);
 			List<ProtfolioCoinWeb> prrotfoliCoinLst = new ArrayList<>();
 			List<ProtfolioCoin> findByProtfolioId = protfolioCoinReporsitory.findByProtfolioId(web.getId());
 			LocalDate localDate = LocalDate.now().minusDays(7);
-//			Date in = new Date();
-//			LocalDateTime ldt = LocalDateTime.ofInstant(in.toInstant(), ZoneId.systemDefault());
-//			Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
-			List<String> coinIdsList = findByProtfolioId.stream().map(ProtfolioCoin::getCoinId).collect(Collectors.toList());
+			List<String> coinIdsList = findByProtfolioId.stream().map(ProtfolioCoin::getCoinId)
+					.collect(Collectors.toList());
 			Date from = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-			List<CoinsHistory> coinlist = coinsHistoryRepository.getCoinHistoryByIdAndPastDate(coinIdsList,from);
-//			List<DailyPriceTickers> tikcerList = dailyPriceTickersRepository.findAllById(coinIdsList);
-			
+			List<CoinsHistory> coinlist = coinsHistoryRepository.getCoinHistoryByIdAndPastDate(coinIdsList, from);
+			// List<DailyPriceTickers> tikcerList =
+			// dailyPriceTickersRepository.findAllById(coinIdsList);
+
 			for (ProtfolioCoin protfolioCoin : findByProtfolioId) {
 				ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
 				BeanUtils.copyProperties(protfolioCoin, coinWeb);
 
 				Double avg = (1000 * protfolioCoin.getPercentage()) / 100;
 				Double coinValue = 0.0;
-				
-				CoinsHistory coinsHistory = coinlist.stream().filter(coin ->coin.getCoin_id().equalsIgnoreCase(coinWeb.getCoinId())).findFirst().orElse(null);
-				if(null != coinsHistory)
-					totalCreatedPrice = Double.sum(totalCreatedPrice, coinsHistory.getClose());
+
+				CoinsHistory coinsHistory = coinlist.stream()
+						.filter(coin -> coin.getCoin_id().equalsIgnoreCase(coinWeb.getCoinId())).findFirst()
+						.orElse(null);
+				if (null != coinsHistory) {
+					coinValue = avg / coinsHistory.getClose();
+				}
 
 				CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 				if (null != crypto && crypto.getTickers() != null) {
-					coinValue = avg / crypto.getTickers().getUsd_price();
-					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price()*coinValue);
+					totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price() * coinValue);
 				}
 				coinWeb.setCoin(crypto);
 				prrotfoliCoinLst.add(coinWeb);
@@ -364,8 +382,8 @@ public class CommonServiceImpl implements CommonService {
 			web.setProtfolioCoin(prrotfoliCoinLst);
 			web.setTotalCreatedPrice(totalCreatedPrice);
 			web.setTotalCurrentPrice(totalCurrentPrice);
-			web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
-			
+			web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 10);
+
 			resList.add(web);
 
 		}
@@ -380,8 +398,11 @@ public class CommonServiceImpl implements CommonService {
 		List<Long> userProtfoliList = new ArrayList<>();
 		List<UserProtfolio> findByUserEmail = userProtfolioReporsitory.findByUserEmail(email);
 		Boolean isProcess = Boolean.FALSE;
+		Double totalCreatedPrice = 0.0;
 		for (UserProtfolio userProtfolio : findByUserEmail) {
 			isProcess = Boolean.TRUE;
+			if(null != userProtfolio.getInvestmentAmount())
+				totalCreatedPrice = Double.sum(totalCreatedPrice, userProtfolio.getInvestmentAmount());
 			userProtfoliList.add(userProtfolio.getProtfolioId());
 		}
 		if (!isProcess) {
@@ -392,7 +413,7 @@ public class CommonServiceImpl implements CommonService {
 			List<Protfolio> findAll = protfolioReporsitory.findAllById(userProtfoliList);
 			for (Protfolio protfolio : findAll) {
 				ProtfolioWeb web = new ProtfolioWeb();
-				Double totalCreatedPrice = 0.0;
+				
 				Double totalCurrentPrice = 0.0;
 
 				BeanUtils.copyProperties(protfolio, web);
@@ -402,12 +423,21 @@ public class CommonServiceImpl implements CommonService {
 					ProtfolioCoinWeb coinWeb = new ProtfolioCoinWeb();
 					BeanUtils.copyProperties(protfolioCoin, coinWeb);
 
-					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioId(coinWeb.getCoinId(),
-							protfolio.getId());
+					
+					UserCrypto userCrypto = userCryptoRepository.findFirstByCoinIdAndProtfolioIdAndUserEmail(coinWeb.getCoinId(),
+							protfolio.getId(),email);
 					CryptoCoins crypto = cryptoCoinReporsitory.findById(coinWeb.getCoinId()).orElse(null);
 					if (null != crypto && crypto.getTickers() != null && userCrypto != null) {
-						totalCreatedPrice = Double.sum(totalCreatedPrice, coinWeb.getCurrentPrice()*userCrypto.getCoinvalue());
-						totalCurrentPrice = Double.sum(totalCurrentPrice, crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue());
+//						totalCreatedPrice = Double.sum(totalCreatedPrice,coinWeb.getCurrentPrice() * userCrypto.getCoinvalue());
+						totalCurrentPrice = Double.sum(totalCurrentPrice,(crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue()));
+//						log.info("===="+coinWeb.getCoinId()+"====");
+//						
+//						log.info("totalCurrentPrice===="+totalCurrentPrice);
+//						log.info("price ===="+crypto.getTickers().getUsd_price());
+//						log.info("Coin_value===="+userCrypto.getCoinvalue());
+//						log.info("Multiply===="+(crypto.getTickers().getUsd_price() * userCrypto.getCoinvalue()));
+//						
+//						log.info("====");
 					}
 					coinWeb.setCoin(crypto);
 					prrotfoliCoinLst.add(coinWeb);
@@ -417,7 +447,7 @@ public class CommonServiceImpl implements CommonService {
 				web.setTotalCreatedPrice(totalCreatedPrice);
 				web.setTotalCurrentPrice(totalCurrentPrice);
 
-				web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 100);
+				web.setDifferentPercentage((totalCurrentPrice - totalCreatedPrice) / 10);
 
 				resList.add(web);
 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alpha.entity.AvxUser;
+import com.alpha.entity.AvxUserStaking;
 import com.alpha.model.LoginWebModel;
 import com.alpha.service.AvxUserService;
 
@@ -75,6 +76,58 @@ public class AvxController {
 			userWebModel.setError(e.getMessage());
 			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			userWebModel.setPath("/avx/{email}");
+			userWebModel.setMessage(e.getMessage());
+
+			LOG.error(userWebModel.getPath(), e);
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PostMapping("/staking/saveUpdate")
+	public ResponseEntity<?> saveUpdateAvxStaking(@RequestBody AvxUserStaking model) throws Exception {
+		try {
+			model = avxUserService.saveUpdateAvxStaking(model);
+
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(HttpStatus.OK.name());
+			userWebModel.setStatus(HttpStatus.OK.toString());
+			userWebModel.setMessage("successfully !");
+			userWebModel.setData(model);
+			userWebModel.setPath("/avx/staking/saveUpdate");
+
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.OK);
+		} catch (Exception e) {
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(e.getMessage());
+			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+			userWebModel.setPath("/avx/staking/saveUpdate");
+			userWebModel.setMessage(e.getMessage());
+			LOG.error(userWebModel.getPath(), e);
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	
+	@GetMapping("/staking/{email}")
+	public ResponseEntity<?> avxUserStakingDetailsByEmail(@PathVariable String email) throws Exception {
+		try {
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(HttpStatus.OK.name());
+			userWebModel.setStatus(HttpStatus.OK.toString());
+			userWebModel.setMessage("successfully !");
+			userWebModel.setData(avxUserService.avxUserStakingDetailsByEmail(email));
+			userWebModel.setPath("/avx/staking/{email}");
+
+			return new ResponseEntity<LoginWebModel>(userWebModel, HttpStatus.OK);
+		} catch (Exception e) {
+			LoginWebModel userWebModel = new LoginWebModel();
+			userWebModel.setTimestamp(new Timestamp(new Date().getTime()));
+			userWebModel.setError(e.getMessage());
+			userWebModel.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+			userWebModel.setPath("/avx/staking/{email}");
 			userWebModel.setMessage(e.getMessage());
 
 			LOG.error(userWebModel.getPath(), e);
